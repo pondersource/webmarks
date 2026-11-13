@@ -100,12 +100,34 @@ With Node.js 22, run:
 
 ```sh
 npm ci
-npm ci --prefix tests/acceptance
-npx --prefix tests/acceptance playwright install chromium
-npm --prefix tests/acceptance test
+npm ci --prefix acceptance
+npx --prefix acceptance playwright install chromium
+npm --prefix acceptance test
 ```
 
 Playwright starts Webmarks and a local Armadietto server with disposable
 accounts. The test signs in through the widget, saves a two-tag bookmark,
 checks the private archive over HTTP, and retrieves it in a fresh browser
 context. It requires no external provider account.
+
+### Bookmark data shape
+
+The two-tag acceptance fixture uses the archive shape documented in the
+[PDS Interop bookmark convention](https://pdsinterop.org/conventions/bookmark/).
+Webmarks passes the form values to the remoteStorage bookmarks module. The
+module stores a JSON object in `/bookmarks/archive/`, keyed by a hash of the
+target URL.
+
+| Webmarks field | Solid bookmark representation | Vanilla Solid module |
+| --- | --- | --- |
+| `url` | `bookmark:recalls` with an IRI target | Reads and writes it as `link` |
+| `title` | `rdfs:label` preferred by the convention | Writes `dcterms:title` and reads either predicate |
+| `tags` | `bookmark:hasTopic`, preferably with topic IRIs | Accepts one `topic` and writes either an IRI or literal, but returns only an IRI |
+| Private archive | Access controlled by the pod | Consults private and public type indexes. Verify access to the chosen write destination with an anonymous read |
+
+The [vanilla Solid module source](https://github.com/solid-contrib/data-modules/blob/4602b8aee3737f06248ef08d45d771525cbba0a3/bookmarks/vanilla/src/modules/Bookmark.ts)
+shows why this fixture cannot round-trip through its current API without
+losing a tag. A literal topic also disappears on read. Preserving both tags
+requires a representation for multiple topics and a read path that handles
+the chosen representation. The Playwright test exercises the remoteStorage
+side of this comparison.

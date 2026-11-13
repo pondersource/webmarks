@@ -17,8 +17,8 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            tests/acceptance/package-lock.json
+            acceptance/package-lock.json
       - run: npm ci
-      - run: npm ci --prefix tests/acceptance
-      - run: npx --prefix tests/acceptance playwright install --with-deps chromium
-      - run: npm --prefix tests/acceptance test
+      - run: npm ci --prefix acceptance
+      - run: npx --prefix acceptance playwright install --with-deps chromium
+      - run: npm --prefix acceptance test

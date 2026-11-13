@@ -11,7 +11,7 @@ module.exports = defineConfig({
   webServer: [
     {
       command: 'npm start -- --host 127.0.0.1 --port 8107',
-      cwd: '../..',
+      cwd: '..',
       url: 'http://127.0.0.1:8107',
       timeout: 120_000,
     },
