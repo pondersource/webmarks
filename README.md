@@ -93,3 +93,19 @@ Deploy current production branch to [production](https://webmarks-dev.5apps.com)
   * [ember inspector for chrome](https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi)
   * [ember inspector for firefox](https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/)
 * [Material UI icons](https://material.io/tools/icons/)
+
+## remoteStorage acceptance test
+
+With Node.js 22, run:
+
+```sh
+npm ci
+npm ci --prefix tests/acceptance
+npx --prefix tests/acceptance playwright install chromium
+npm --prefix tests/acceptance test
+```
+
+Playwright starts Webmarks and a local Armadietto server with disposable
+accounts. The test signs in through the widget, saves a two-tag bookmark,
+checks the private archive over HTTP, and retrieves it in a fresh browser
+context. It requires no external provider account.
