@@ -6,6 +6,8 @@ import { isEmpty, isPresent } from '@ember/utils';
 import config from 'webmarks/config/environment';
 import Bookmark from 'webmarks/models/bookmark';
 import RemoteStorage from 'remotestoragejs';
+import storageApiKeys from '../config/storage-providers';
+import { configureProviderRedirects } from '../utils/provider-redirects';
 import Widget from 'remotestorage-widget';
 import Bookmarks from 'remotestorage-module-bookmarks';
 
@@ -145,10 +147,8 @@ export default Service.extend(Evented, {
     remoteStorage.access.claim('bookmarks', 'rw');
     remoteStorage.caching.enable('/bookmarks/archive/');
 
-    remoteStorage.setApiKeys({
-      dropbox: config.dropboxAppKey,
-      googledrive: config.gdriveClientId
-    });
+    remoteStorage.setApiKeys(storageApiKeys);
+    configureProviderRedirects(remoteStorage);
   },
 
   setupConnectWidget() {

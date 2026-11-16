@@ -26,10 +26,6 @@ module.exports = function(environment) {
     }
   };
 
-  // OAuth credentials
-  ENV.dropboxAppKey  = 'ntjvpbot30dwe8a';
-  ENV.gdriveClientId = '640728552949-ev77jd4a8im0bqkhr6hd06ir9cs8inao.apps.googleusercontent.com';
-
   if (environment === 'development') {
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
