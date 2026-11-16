@@ -148,7 +148,7 @@ export default Service.extend(Evented, {
     remoteStorage.caching.enable('/bookmarks/archive/');
 
     remoteStorage.setApiKeys(storageApiKeys);
-    configureProviderRedirects(remoteStorage);
+    configureProviderRedirects(remoteStorage, '/archive');
   },
 
   setupConnectWidget() {
