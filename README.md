@@ -143,8 +143,10 @@ Google Drive can sync private data, but rs.js does not support public sharing UR
 Register `https://webmarks.pondersource.com/archive` as the OAuth callback.
 Nested routes return to this stable app route before starting provider sign-in.
 
-The PonderSource Google OAuth project is `pondersource-apps`. It currently runs
-in Testing mode with `michiel@unhosted.org` as a test user; public availability
-requires completing the consent branding and Google verification requirements.
+The PonderSource Google OAuth project is `pondersource-apps`. It is in
+production mode, available beyond named test users. Google verification is still
+pending; users may see an unverified-app warning and the project has a lifetime
+100-user cap until its requested scopes are approved. The published privacy
+notice is https://pondersource.com/privacy.html.
 The Dropbox app is **PonderSource Apps** (app key `gaezgoax9khjilj`), with
 additional users enabled in development mode (up to 500 users).
