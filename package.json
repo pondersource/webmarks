@@ -66,6 +66,6 @@
     "moment": "^2.31.0",
     "remotestorage-module-bookmarks": "0.3.2",
     "remotestorage-widget": "^1.8.1",
-    "remotestoragejs": "^2.0.0-beta.10"
+    "remotestoragejs": "file:vendor/remotestoragejs-2.0.0-beta.10-pondersource.1.tgz"
   }
 }
