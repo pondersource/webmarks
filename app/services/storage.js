@@ -6,6 +6,7 @@ import { isEmpty, isPresent } from '@ember/utils';
 import config from 'webmarks/config/environment';
 import Bookmark from 'webmarks/models/bookmark';
 import RemoteStorage from 'remotestoragejs';
+import { withChanges, attachSolid } from '@pondersource/rs-apps';
 import storageApiKeys from '../config/storage-providers';
 import { configureProviderRedirects } from '../utils/provider-redirects';
 import Widget from 'remotestorage-widget';
@@ -141,13 +142,14 @@ export default Service.extend(Evented, {
   },
 
   setupRemoteStorage() {
-    const remoteStorage = new RemoteStorage({modules: [Bookmarks]});
+    const remoteStorage = new RemoteStorage({modules: [withChanges(Bookmarks, 'onArchiveChange', 'archive/')]});
     this.set('remoteStorage', remoteStorage);
 
     remoteStorage.access.claim('bookmarks', 'rw');
     remoteStorage.caching.enable('/bookmarks/archive/');
 
     remoteStorage.setApiKeys(storageApiKeys);
+    attachSolid(remoteStorage);
     configureProviderRedirects(remoteStorage, '/archive');
   },
 
@@ -165,7 +167,7 @@ export default Service.extend(Evented, {
   },
 
   setupChangeHandler() {
-    this.remoteStorage.bookmarks.client.scope('archive/').on('change', (event) => {
+    this.remoteStorage.bookmarks.onArchiveChange((event) => {
       run(() => {
         let archiveBookmarks = this.archiveBookmarks;
 
