@@ -6,7 +6,7 @@ import { isEmpty, isPresent } from '@ember/utils';
 import config from 'webmarks/config/environment';
 import Bookmark from 'webmarks/models/bookmark';
 import RemoteStorage from 'remotestoragejs';
-import { withChanges, attachSolid } from '@pondersource/rs-apps';
+import { withChanges } from '@pondersource/rs-apps';
 import storageApiKeys from '../config/storage-providers';
 import { configureProviderRedirects } from '../utils/provider-redirects';
 import Widget from 'remotestorage-widget';
@@ -149,12 +149,13 @@ export default Service.extend(Evented, {
     remoteStorage.caching.enable('/bookmarks/archive/');
 
     remoteStorage.setApiKeys(storageApiKeys);
-    attachSolid(remoteStorage);
+
     configureProviderRedirects(remoteStorage, '/archive');
   },
 
   setupConnectWidget() {
     const widget = new Widget(this.remoteStorage, {
+      solidProviders: { allowAnyProvider: true },
       domID: 'remotestorage-connect',
       redirectUri: window.location.href,
       modalBackdrop: true
