@@ -65,8 +65,8 @@
   "dependencies": {
     "moment": "^2.31.0",
     "remotestorage-module-bookmarks": "0.3.2",
-    "remotestorage-widget": "file:vendor/remotestorage-widget-1.8.2-pondersource.2-preview.5.tgz",
-    "remotestoragejs": "file:vendor/remotestoragejs-2.0.0-beta.10-pondersource.7-preview.5.tgz",
+    "remotestorage-widget": "file:vendor/remotestorage-widget-1.8.2-pondersource.2-preview.6.tgz",
+    "remotestoragejs": "file:vendor/remotestoragejs-2.0.0-beta.10-pondersource.7-preview.6.tgz",
     "@pondersource/rs-apps": "file:vendor/pondersource-rs-apps-1.0.0.tgz"
   }
 }
