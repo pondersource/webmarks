@@ -66,7 +66,7 @@ export async function view({root, store}) {
   const table = await bookmarkTable(store);
   const style = element('style', `
     .webmarks { max-width: 56rem; margin: auto; padding: 1.25rem; font: 1rem system-ui; }
-    .webmarks form, .webmarks ul { display: grid; gap: .65rem; }
+    .webmarks fieldset, .webmarks ul { display: grid; gap: .65rem; }
     .webmarks ul { padding: 0; list-style: none; }
     .webmarks li { border-block-start: 1px solid #8886; padding-block: .7rem; }
     .webmarks label, .webmarks input, .webmarks textarea { display: block; width: 100%; box-sizing: border-box; }
@@ -77,10 +77,8 @@ export async function view({root, store}) {
   `);
   const main = element('main');
   main.className = 'webmarks';
-  const form = element('form');
   const fields = element('fieldset');
   fields.append(element('legend', 'Bookmark'));
-  form.append(fields);
   const inputs = {};
   for (const [key, label, tag] of [
     ['title', 'Title', 'input'], ['url', 'URL', 'input'],
@@ -91,10 +89,9 @@ export async function view({root, store}) {
     wrapper.append(inputs[key]);
     fields.append(wrapper);
   }
-  inputs.title.required = true;
-  inputs.url.required = true;
   inputs.url.type = 'url';
   const save = element('button', 'Add bookmark');
+  save.type = 'button';
   const cancel = element('button', 'Cancel edit');
   cancel.type = 'button';
   fields.append(save, cancel);
@@ -106,7 +103,7 @@ export async function view({root, store}) {
   const list = element('ul');
   const status = element('p');
   status.setAttribute('role', 'status');
-  main.append(element('h1', 'Webmarks'), form, status, filterLabel, list);
+  main.append(element('h1', 'Webmarks'), fields, status, filterLabel, list);
   root.replaceChildren(style, main);
 
   let bookmarks = [];
@@ -115,7 +112,7 @@ export async function view({root, store}) {
 
   function edit(bookmark) {
     editing = bookmark;
-    form.reset();
+    for (const input of Object.values(inputs)) input.value = '';
     cancel.hidden = !bookmark;
     save.textContent = bookmark ? 'Save bookmark' : 'Add bookmark';
     if (bookmark) {
@@ -176,8 +173,7 @@ export async function view({root, store}) {
 
   cancel.addEventListener('click', () => edit());
   filter.addEventListener('input', render);
-  form.addEventListener('submit', event => {
-    event.preventDefault();
+  function saveBookmark() {
     run(async () => {
       const title = inputs.title.value.trim();
       if (!title) throw new Error('Enter a title.');
@@ -191,7 +187,16 @@ export async function view({root, store}) {
       });
       edit();
     }, 'Bookmark saved.');
-  });
+  }
+  save.addEventListener('click', saveBookmark);
+  for (const input of [inputs.title, inputs.url, inputs.tags]) {
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.isComposing) {
+        event.preventDefault();
+        saveBookmark();
+      }
+    });
+  }
 
   edit();
   await run(async () => {}, '');
