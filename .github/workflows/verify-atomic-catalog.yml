@@ -1,0 +1,76 @@
+name: Verify published Webmarks in Atomic
+on:
+  push:
+    branches: [codex/verify-webmarks-atomic-catalog]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      HUSKY: '0'
+      VITE_ATOMIC_SERVER_URL: 'http://localhost:9883'
+      VITE_PLUGIN_CATALOG_URL: 'http://localhost:8000/community.json'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ontola/atomic-server
+          ref: 30994948b5adadd765ecfcdccdf0aad14ef5be1a
+          path: atomic
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: acceptance/package-lock.json
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: atomic/browser/package.json
+      - name: Prepare browser packages
+        run: |
+          npm ci --prefix acceptance --no-audit --no-fund
+          npx --prefix acceptance playwright install --with-deps chromium
+          pnpm -C atomic/browser install --frozen-lockfile
+          pnpm -C atomic/browser --filter @tomic/lib run build
+          pnpm -C atomic/browser --filter '@tomic/data-browser^...' run build
+      - name: Start isolated AtomicServer
+        run: |
+          docker run --detach --rm --name webmarks-atomic-demo --network host \
+            -e ATOMIC_IP=127.0.0.1 -e ATOMIC_PORT=9883 -e ATOMIC_DOMAIN=localhost \
+            ghcr.io/ontola/atomic-server:develop
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:9883/server > /tmp/atomic-info.json && break
+            sleep 1
+          done
+          test -s /tmp/atomic-info.json
+          mkdir -p atomic/browser/data-browser/public/wasm
+          for file in atomic_wasm.js atomic_wasm_bg.wasm; do
+            curl --fail --silent --show-error http://localhost:9883/wasm/$file -o atomic/browser/data-browser/public/wasm/$file
+          done
+          file atomic/browser/data-browser/public/wasm/atomic_wasm_bg.wasm | grep -i WebAssembly
+      - name: Serve the candidate catalog and start the unmodified host
+        run: |
+          curl -fsS https://raw.githubusercontent.com/ontola/atomic-plugins/ac368dcdd13cd2e59a22d920883d72d82976aeca/integrations/catalog.json -o upstream-catalog.json
+          for attempt in $(seq 1 24); do
+            if curl -fsS https://webmarks.pondersource.com/atomic/webmarks-0.1.0.js -o /tmp/published-webmarks.js && cmp atomic/webmarks-0.1.0.js /tmp/published-webmarks.js; then
+              break
+            fi
+            sleep 10
+          done
+          cmp atomic/webmarks-0.1.0.js /tmp/published-webmarks.js
+          node acceptance/verify-atomic-catalog.cjs serve > /tmp/webmarks-catalog.log 2>&1 &
+          pnpm -C atomic/browser/data-browser dev --host 127.0.0.1 --port 6747 > /tmp/atomic-vite.log 2>&1 &
+          for i in $(seq 1 75); do
+            curl -fsS http://localhost:6747/ >/dev/null && curl -fsS http://localhost:8000/catalog.json >/dev/null && exit 0
+            sleep 1
+          done
+          exit 1
+      - name: Verify install and persistence in Chromium
+        run: node acceptance/verify-atomic-catalog.cjs
+      - name: Diagnose failures
+        if: failure()
+        run: |
+          test ! -f /tmp/atomic-vite.log || tail -100 /tmp/atomic-vite.log
+          test ! -f /tmp/webmarks-catalog.log || tail -50 /tmp/webmarks-catalog.log
+          docker logs webmarks-atomic-demo 2>&1 | tail -80 || true
