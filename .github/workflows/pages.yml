@@ -29,6 +29,7 @@ jobs:
         run: |
           printf '%s\n' 'webmarks.pondersource.com' > dist/CNAME
           cp dist/index.html dist/404.html
+          cp -R atomic dist/
           touch dist/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
