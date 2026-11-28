@@ -1,5 +1,6 @@
 name: Deploy Ponder Source app
 on:
+  pull_request:
   push:
     branches: [master]
   workflow_dispatch:
@@ -22,6 +23,29 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build -- --environment=production
+      - uses: actions/checkout@v4
+        with:
+          repository: pondersource/remotestorage.js
+          ref: 607acc5a474c28e08ca3836de71d20c9bdff7ca1
+          path: atomic-storage-source
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ontola/atomic-server
+          ref: fb640fb54657ef826db8ec7ca55e24587faab1da
+          path: atomic-sdk-source
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: atomic-sdk-source/browser/package.json
+
+      - run: pnpm install --frozen-lockfile && pnpm --filter @tomic/utils build
+        working-directory: atomic-sdk-source/browser
+
+      - run: node atomic-storage-source/scripts/build-atomic-sdk.mjs atomic-sdk-source dist/atomic-sdk
+
       - name: Prepare custom domain and client routes
         run: |
           printf '%s\n' 'webmarks.pondersource.com' > dist/CNAME
@@ -34,6 +58,7 @@ jobs:
           path: dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

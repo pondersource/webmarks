@@ -142,6 +142,7 @@ export default Service.extend(Evented, {
   },
 
   setupRemoteStorage() {
+    RemoteStorage.Atomic.loadSDK = window.loadPonderSourceAtomicSDK;
     const remoteStorage = new RemoteStorage({modules: [withChanges(Bookmarks, 'onArchiveChange', 'archive/')]});
     this.set('remoteStorage', remoteStorage);
 
