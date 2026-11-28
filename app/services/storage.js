@@ -142,6 +142,7 @@ export default Service.extend(Evented, {
   },
 
   setupRemoteStorage() {
+    RemoteStorage.Atomic.loadSDK = () => import(/* webpackIgnore: true */ /* @vite-ignore */ new URL('atomic-sdk/index.mjs', document.baseURI).href);
     const remoteStorage = new RemoteStorage({modules: [withChanges(Bookmarks, 'onArchiveChange', 'archive/')]});
     this.set('remoteStorage', remoteStorage);
 
